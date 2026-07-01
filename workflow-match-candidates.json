@@ -1,0 +1,195 @@
+{
+  "name": "Match Candidates",
+  "nodes": [
+    {
+      "id": "webhook-match-node",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "match-candidates",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "webhookId": "match-candidates"
+    },
+    {
+      "id": "openai-embed-jd-node",
+      "name": "OpenAI - Embed JD",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "parameters": {
+        "resource": "text",
+        "operation": "customApiCall",
+        "requestMethod": "POST",
+        "url": "/embeddings",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "text-embedding-3-small"
+            },
+            {
+              "name": "input",
+              "value": "={{ $json.jd }}"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "id": "mongo-search-node",
+      "name": "MongoDB - Vector Search",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "parameters": {
+        "operation": "aggregate",
+        "collection": "resumes",
+        "database": "getdeveloper",
+        "query": "[{\"$vectorSearch\": {\"index\": \"resume_vector_index\", \"path\": \"embedding\", \"queryVector\": [0.1, 0.2, 0.3], \"numCandidates\": 100, \"limit\": 20}}]",
+        "options": {}
+      },
+      "credentials": {
+        "mongoDb": {
+          "id": "",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "id": "code-format-node",
+      "name": "Code - Format Candidates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const candidates = $input.all()[0].json;\nconst formatted = candidates.map((c, i) => {\n  const text = c.parsed_text ? c.parsed_text.substring(0, 1200) : '';\n  return `Candidate ${i+1}:\nFile: ${c.filename || 'Unknown'}\nText: ${text}`;\n}).join('\n\n---\n\n');\n\nreturn [{\n  json: {\n    candidates_text: formatted,\n    candidate_list: candidates\n  }\n}];"
+      }
+    },
+    {
+      "id": "openai-score-node",
+      "name": "OpenAI - Generate Scores",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
+      "position": [1050, 300],
+      "parameters": {
+        "resource": "text",
+        "operation": "customApiCall",
+        "requestMethod": "POST",
+        "url": "/chat/completions",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-4o-mini"
+            },
+            {
+              "name": "messages",
+              "value": "[{\"role\": \"system\", \"content\": \"You are a recruiter AI. Given a job description and candidate profiles, return a STRICT JSON array. Each item must have: drive_file_id (string), filename (string), match_score (number 0-100), skills_match (number 0-100), experience_match (number 0-100), domain_fit (number 0-100), explanation (string, 2 sentences max), strengths (array of strings, max 3), gaps (array of strings, max 3). Return ONLY valid JSON array. No markdown.\"}, {\"role\": \"user\", \"content\": \"Job Description: {{ $('Webhook').item.json.jd }}\\n\\nCandidates: {{ $json.candidates_text }}\"}]"
+            },
+            {
+              "name": "response_format",
+              "value": "{\"type\": \"json_object\"}"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "openAiApi": {
+          "id": "",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "id": "respond-match-node",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 300],
+      "parameters": {
+        "respondWith": "json",
+        "options": {},
+        "statusCode": 200,
+        "responseBody": "={{ $json }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - Embed JD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - Embed JD": {
+      "main": [
+        [
+          {
+            "node": "MongoDB - Vector Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB - Vector Search": {
+      "main": [
+        [
+          {
+            "node": "Code - Format Candidates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Format Candidates": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - Generate Scores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - Generate Scores": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": []
+}

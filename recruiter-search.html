@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Match · Recruiter · GetDeveloper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body class="app">
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="recruiter-dashboard.html" class="brand">
+        <span class="brand-mark">G</span>
+        Get<em>Developer</em>
+      </a>
+      <nav class="nav-links">
+        <a href="recruiter-dashboard.html">Dashboard</a>
+        <a href="recruiter-search.html" class="active">AI Match</a>
+        <a href="#">Pipeline</a>
+        <a href="#">Billing</a>
+      </nav>
+      <div class="nav-spacer"></div>
+      <div class="nav-user" id="user-nav">
+        <div class="avatar">AG</div>
+        Aanya G.
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <div class="container-narrow">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Find your match</h1>
+          <p class="page-sub">Paste your JD or describe the role. We'll do the rest in under 60 seconds.</p>
+        </div>
+        <div class="flex-gap-8">
+          <a href="recruiter-dashboard.html" class="btn btn-ghost btn-sm">← Back</a>
+        </div>
+      </div>
+
+      <div class="card mb-24" style="padding:8px">
+        <div class="flex-gap-8" style="background:var(--surface-2);padding:4px;border-radius:10px">
+          <button class="btn btn-primary btn-sm" style="flex:1">Paste JD</button>
+          <button class="btn btn-ghost btn-sm" style="flex:1">Describe in plain English</button>
+          <button class="btn btn-ghost btn-sm" style="flex:1">Upload file</button>
+        </div>
+      </div>
+
+      <form id="match-form" onsubmit="return false;">
+
+        <div class="card mb-24">
+          <div class="field">
+            <label class="label" for="title">Role title</label>
+            <input id="title" class="input" type="text" placeholder="e.g. Senior Full-Stack Engineer" value="Senior Full-Stack Engineer (Next.js + tRPC)">
+          </div>
+
+          <div class="field">
+            <label class="label" for="jd">Paste your job description</label>
+            <textarea id="jd" class="textarea" style="min-height:240px">We're hiring a Senior Full-Stack Engineer to lead our payments dashboard rebuild.
+
+Required:
+• 5+ years in production Next.js (App Router preferred) and React 18
+• Strong TypeScript — generics, discriminated unions, not just JSX-with-types
+• tRPC + Prisma in production, ideally on a multi-tenant SaaS
+• PostgreSQL fluency: indexing, query plans, connection pooling
+• Comfortable shipping to Vercel + AWS, with CI/CD discipline
+
+Nice to have:
+• Stripe billing integration experience
+• Background in Rails or Django (we deal with both legacy services)
+• Open-source contributions
+
+You will own the rewrite of /billing, mentor 2 mid-level engineers, and partner directly with the CTO.</textarea>
+            <p class="help">💡 Tip: include the framework version, team structure, and the actual problem to be solved — better JD, better matches.</p>
+          </div>
+        </div>
+
+        <div class="card mb-24">
+          <div class="card-section-title">
+            <h3>Filters</h3>
+            <span class="muted">Optional · the AI handles most of this from your JD</span>
+          </div>
+
+          <div class="grid-3">
+            <div class="field">
+              <label class="label">Min experience</label>
+              <select class="select">
+                <option>Any</option>
+                <option>1+ yrs</option>
+                <option>3+ yrs</option>
+                <option selected>5+ yrs</option>
+                <option>8+ yrs</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label">Education</label>
+              <select class="select">
+                <option selected>Any</option>
+                <option>Bachelor's required</option>
+                <option>Master's preferred</option>
+                <option>Tier 1 CS only</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label">Location / timezone</label>
+              <select class="select">
+                <option>India · any city</option>
+                <option selected>India · Remote-friendly</option>
+                <option>India · US hours overlap</option>
+                <option>India · UK hours overlap</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label">Availability</label>
+              <select class="select">
+                <option>Any</option>
+                <option selected>Available within 30 days</option>
+                <option>Available within 60 days</option>
+                <option>Immediate joiners only</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label">Engagement type</label>
+              <select class="select">
+                <option selected>Full-time / Contract</option>
+                <option>Full-time only</option>
+                <option>Contract only</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="label">Budget (USD/month)</label>
+              <select class="select">
+                <option>Any</option>
+                <option>$2k–4k</option>
+                <option>$4k–6k</option>
+                <option selected>$6k–9k</option>
+                <option>$9k+</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field" style="margin-bottom:0">
+            <label class="label">Must-have skills (optional override)</label>
+            <div class="flex-gap-8" style="flex-wrap:wrap">
+              <span class="pill pill-orange">Next.js ✕</span>
+              <span class="pill pill-orange">TypeScript ✕</span>
+              <span class="pill pill-orange">tRPC ✕</span>
+              <span class="pill pill-orange">PostgreSQL ✕</span>
+              <span class="pill">+ Add skill</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-between" style="margin-bottom:80px">
+          <p class="text-sm text-muted mb-0">⚡ Avg search time: 38 seconds across 12,438 vetted profiles</p>
+          <div class="flex-gap-8">
+            <button type="button" class="btn btn-outline">Save as draft</button>
+            <button type="submit" class="btn btn-accent btn-lg">✨ Run AI match →</button>
+          </div>
+        </div>
+      </form>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">© 2026 GetDeveloper · AI Match prototype</div>
+  </footer>
+  <script src="./app.js"></script>
+</body>
+</html>

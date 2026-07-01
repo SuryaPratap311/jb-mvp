@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Match Results · GetDeveloper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body class="app">
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="recruiter-dashboard.html" class="brand">
+        <span class="brand-mark">G</span>
+        Get<em>Developer</em>
+      </a>
+      <nav class="nav-links">
+        <a href="recruiter-dashboard.html">Dashboard</a>
+        <a href="recruiter-search.html" class="active">AI Match</a>
+        <a href="#">Pipeline</a>
+        <a href="#">Billing</a>
+      </nav>
+      <div class="nav-user" id="user-nav">
+        <div class="avatar">AG</div>
+        Aanya G.
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <div class="container">
+
+      <div class="page-header">
+        <div>
+          <p class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin:0 0 4px">
+            <a href="recruiter-search.html" style="color:var(--muted)">← AI Match</a> · Search ran 12s ago
+          </p>
+          <h1 class="page-title">Senior Full-Stack Engineer (Next.js + tRPC)</h1>
+          <p class="page-sub">142 candidates scanned · 38 above 60% match · ranked by overall fit score</p>
+        </div>
+        <div class="flex-gap-8">
+          <button class="btn btn-outline btn-sm">⭐ Save search</button>
+          <button class="btn btn-outline btn-sm">📤 Share shortlist</button>
+          <a href="recruiter-search.html" class="btn btn-primary btn-sm">Refine →</a>
+        </div>
+      </div>
+
+      <div class="ai-banner">
+        <div class="ai-icon">✨</div>
+        <div style="flex:1">
+          <h4>AI summary: 7 strong matches, 12 promising, and 19 partial fits</h4>
+          <p>Most candidates are strong on Next.js + TS but weaker on tRPC. Education skews Tier 1 CS. Average expected rate $5.4k/mo — within your budget.</p>
+        </div>
+      </div>
+
+      <div id="results-container">
+      <!-- Dynamic results will load here -->
+      </div>
+
+      <div class="grid-4 mb-24" style="display:none">
+        <div class="stat">
+          <div class="stat-icon" style="background:var(--green-soft);color:#065F46">⭐</div>
+          <p class="stat-label">Strong (90%+)</p>
+          <div class="stat-value">7</div>
+          <div class="stat-meta"><span class="text-muted">priority outreach</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-icon" style="background:var(--info-soft);color:#1E40AF">👍</div>
+          <p class="stat-label">Promising (75–89%)</p>
+          <div class="stat-value">12</div>
+          <div class="stat-meta"><span class="text-muted">quick screen worth it</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-icon">~</div>
+          <p class="stat-label">Partial (60–74%)</p>
+          <div class="stat-value">19</div>
+          <div class="stat-meta"><span class="text-muted">stretched on 1–2 skills</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-icon">⏱️</div>
+          <p class="stat-label">Search time</p>
+          <div class="stat-value">38<span style="font-size:18px;color:var(--muted);font-weight:500">s</span></div>
+          <div class="stat-meta"><span class="text-muted">across 12,438 profiles</span></div>
+        </div>
+      </div>
+
+      <div class="row-wrap">
+
+        <aside class="col" style="max-width:280px;min-width:260px">
+          <div class="card filter-card">
+            <h3 class="card-title">Refine results</h3>
+
+            <div class="filter-group">
+              <h4>Match score</h4>
+              <label class="check"><input type="checkbox" checked> 90%+ <span class="text-muted text-xs">(7)</span></label>
+              <label class="check"><input type="checkbox" checked> 75–89% <span class="text-muted text-xs">(12)</span></label>
+              <label class="check"><input type="checkbox"> 60–74% <span class="text-muted text-xs">(19)</span></label>
+              <label class="check"><input type="checkbox"> Below 60% <span class="text-muted text-xs">(104)</span></label>
+            </div>
+
+            <div class="filter-group">
+              <h4>Experience</h4>
+              <label class="check"><input type="checkbox"> 3–5 yrs</label>
+              <label class="check"><input type="checkbox" checked> 5–8 yrs</label>
+              <label class="check"><input type="checkbox" checked> 8+ yrs</label>
+            </div>
+
+            <div class="filter-group">
+              <h4>Availability</h4>
+              <label class="check"><input type="radio" name="avail" checked> Within 30 days</label>
+              <label class="check"><input type="radio" name="avail"> Within 60 days</label>
+              <label class="check"><input type="radio" name="avail"> Any</label>
+            </div>
+
+            <div class="filter-group">
+              <h4>Expected rate (USD/mo)</h4>
+              <div class="range-row">
+                <input class="input" type="number" placeholder="Min" value="3000">
+                <input class="input" type="number" placeholder="Max" value="9000">
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <h4>Education</h4>
+              <label class="check"><input type="checkbox"> IIT / NIT / BITS</label>
+              <label class="check"><input type="checkbox"> Tier 1 CS</label>
+              <label class="check"><input type="checkbox"> Master's or higher</label>
+            </div>
+
+            <div class="filter-group" style="padding-bottom:0">
+              <button class="btn btn-outline btn-block btn-sm">Reset filters</button>
+            </div>
+          </div>
+        </aside>
+
+        <section class="col">
+
+          <div class="flex-between mb-16">
+            <div class="flex-gap-8">
+              <span class="text-sm text-muted">Sort by</span>
+              <select class="select" style="width:auto;padding:6px 10px;font-size:13px">
+                <option>Best match</option>
+                <option>Experience (high → low)</option>
+                <option>Availability (soonest)</option>
+                <option>Rate (low → high)</option>
+              </select>
+            </div>
+            <span class="text-sm text-muted">Showing 1–5 of 38</span>
+          </div>
+
+          <a class="result-card" href="recruiter-resume-detail.html" style="text-decoration:none;color:inherit;display:grid">
+            <div style="display:flex;align-items:center;justify-content:center">
+              <div class="score-ring" style="--p:94"><span class="pct">94%</span></div>
+            </div>
+            <div>
+              <div class="flex-gap-12 mb-8">
+                <div class="avatar lg">AK</div>
+                <div>
+                  <h3 class="result-name">Arun K.</h3>
+                  <p class="result-role">Senior Full-Stack · Bangalore · 6 yrs</p>
+                </div>
+                <span class="pill pill-green pill-dot">Available now</span>
+                <span class="pill">B.Tech · IIT Roorkee</span>
+              </div>
+              <p class="result-summary">
+                <strong>Why a 94% match:</strong> Production Next.js 14 with App Router across 3 SaaS products, deep TypeScript (uses generics + discriminated unions correctly), 2 yrs of tRPC + Prisma + Postgres on a multi-tenant billing app. Also has Stripe integration on his last role — a perfect "nice to have" hit.
+              </p>
+              <div class="breakdown" style="grid-template-columns:repeat(4,1fr);gap:10px">
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Skills</div><div class="val" style="font-size:18px">96%</div><div class="meta">11 / 12 matched</div></div>
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Experience</div><div class="val" style="font-size:18px">98%</div><div class="meta">6 yrs / 5+ req</div></div>
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Education</div><div class="val" style="font-size:18px">90%</div><div class="meta">B.Tech CS · Tier 1</div></div>
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Domain fit</div><div class="val" style="font-size:18px">92%</div><div class="meta">SaaS · Stripe</div></div>
+              </div>
+              <div class="result-tags">
+                <span class="tag tag-match">✓ Next.js 14</span>
+                <span class="tag tag-match">✓ TypeScript</span>
+                <span class="tag tag-match">✓ tRPC</span>
+                <span class="tag tag-match">✓ Prisma</span>
+                <span class="tag tag-match">✓ PostgreSQL</span>
+                <span class="tag tag-match">✓ Stripe</span>
+                <span class="tag tag-partial">~ AWS (limited)</span>
+              </div>
+            </div>
+            <div class="result-actions">
+              <span class="pill pill-orange">Top match</span>
+              <div class="flex-col" style="gap:8px;width:100%">
+                <span class="text-sm text-muted text-bold" style="text-align:right">$5.8k / mo</span>
+                <button class="btn btn-primary btn-sm">View resume →</button>
+                <button class="btn btn-outline btn-sm">⭐ Shortlist</button>
+              </div>
+            </div>
+          </a>
+
+          <div class="result-card">
+            <div style="display:flex;align-items:center;justify-content:center">
+              <div class="score-ring" style="--p:91"><span class="pct">91%</span></div>
+            </div>
+            <div>
+              <div class="flex-gap-12 mb-8">
+                <div class="avatar lg orange">RD</div>
+                <div>
+                  <h3 class="result-name">Rohan D.</h3>
+                  <p class="result-role">Senior Full-Stack · Pune · 7 yrs</p>
+                </div>
+                <span class="pill pill-green pill-dot">Available 2 weeks</span>
+                <span class="pill">M.Tech · IIIT Hyderabad</span>
+              </div>
+              <p class="result-summary">
+                <strong>Why a 91% match:</strong> 7 yrs across React/Next.js with last 2 yrs leading a tRPC + Prisma stack at a fintech. Strong Postgres tuning experience — exactly what your JD mentions. Slightly above your budget but worth a conversation.
+              </p>
+              <div class="breakdown" style="grid-template-columns:repeat(4,1fr);gap:10px">
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Skills</div><div class="val" style="font-size:18px">90%</div><div class="meta">10 / 12 matched</div></div>
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Experience</div><div class="val" style="font-size:18px">100%</div><div class="meta">7 yrs / 5+ req</div></div>
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Education</div><div class="val" style="font-size:18px">95%</div><div class="meta">M.Tech CS · IIIT-H</div></div>
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Domain fit</div><div class="val" style="font-size:18px">82%</div><div class="meta">Fintech · Postgres</div></div>
+              </div>
+              <div class="result-tags">
+                <span class="tag tag-match">✓ Next.js</span>
+                <span class="tag tag-match">✓ TypeScript</span>
+                <span class="tag tag-match">✓ tRPC</span>
+                <span class="tag tag-match">✓ Prisma</span>
+                <span class="tag tag-match">✓ Postgres tuning</span>
+                <span class="tag tag-miss">✗ Stripe</span>
+              </div>
+            </div>
+            <div class="result-actions">
+              <span class="pill pill-orange">Strong</span>
+              <div class="flex-col" style="gap:8px;width:100%">
+                <span class="text-sm text-muted text-bold" style="text-align:right">$7.2k / mo</span>
+                <a href="recruiter-resume-detail.html" class="btn btn-primary btn-sm">View resume →</a>
+                <button class="btn btn-outline btn-sm">⭐ Shortlist</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-card">
+            <div style="display:flex;align-items:center;justify-content:center">
+              <div class="score-ring" style="--p:88"><span class="pct">88%</span></div>
+            </div>
+            <div>
+              <div class="flex-gap-12 mb-8">
+                <div class="avatar lg green">PG</div>
+                <div>
+                  <h3 class="result-name">Priya G.</h3>
+                  <p class="result-role">Full-Stack Engineer · Bangalore · 5 yrs</p>
+                </div>
+                <span class="pill pill-green pill-dot">Available now</span>
+                <span class="pill">B.E. · BITS Pilani</span>
+              </div>
+              <p class="result-summary">
+                <strong>Why an 88% match:</strong> Strong on TypeScript and Next.js App Router. tRPC experience is shorter (~6 months) but she shipped a paid SaaS using it. Multi-tenant Postgres background. Bonus: also has 2 yrs of Django (your "nice to have").
+              </p>
+              <div class="breakdown" style="grid-template-columns:repeat(4,1fr);gap:10px">
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Skills</div><div class="val" style="font-size:18px">85%</div><div class="meta">9 / 12 matched</div></div>
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Experience</div><div class="val" style="font-size:18px">82%</div><div class="meta">5 yrs / 5+ req</div></div>
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Education</div><div class="val" style="font-size:18px">96%</div><div class="meta">B.E. CS · BITS</div></div>
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Domain fit</div><div class="val" style="font-size:18px">88%</div><div class="meta">SaaS + Django bonus</div></div>
+              </div>
+              <div class="result-tags">
+                <span class="tag tag-match">✓ Next.js</span>
+                <span class="tag tag-match">✓ TypeScript</span>
+                <span class="tag tag-partial">~ tRPC (6 mo)</span>
+                <span class="tag tag-match">✓ Prisma</span>
+                <span class="tag tag-match">✓ PostgreSQL</span>
+                <span class="tag tag-match">✓ Django (bonus)</span>
+              </div>
+            </div>
+            <div class="result-actions">
+              <span class="pill pill-orange">Strong</span>
+              <div class="flex-col" style="gap:8px;width:100%">
+                <span class="text-sm text-muted text-bold" style="text-align:right">$4.6k / mo</span>
+                <a href="recruiter-resume-detail.html" class="btn btn-primary btn-sm">View resume →</a>
+                <button class="btn btn-outline btn-sm">⭐ Shortlist</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-card">
+            <div style="display:flex;align-items:center;justify-content:center">
+              <div class="score-ring amber" style="--p:82"><span class="pct">82%</span></div>
+            </div>
+            <div>
+              <div class="flex-gap-12 mb-8">
+                <div class="avatar lg violet">VS</div>
+                <div>
+                  <h3 class="result-name">Vikram S.</h3>
+                  <p class="result-role">Full-Stack · Hyderabad · 6 yrs</p>
+                </div>
+                <span class="pill pill-orange pill-dot">Available 30 days</span>
+                <span class="pill">B.Tech · NIT Warangal</span>
+              </div>
+              <p class="result-summary">
+                <strong>Why an 82% match:</strong> Excellent Next.js + Postgres background with a SaaS product to his name. Hasn't worked with tRPC specifically — uses Hono + Zod instead, which is conceptually similar. Could ramp up quickly.
+              </p>
+              <div class="breakdown" style="grid-template-columns:repeat(4,1fr);gap:10px">
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Skills</div><div class="val" style="font-size:18px">78%</div><div class="meta">8 / 12 matched</div></div>
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Experience</div><div class="val" style="font-size:18px">94%</div><div class="meta">6 yrs / 5+ req</div></div>
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Education</div><div class="val" style="font-size:18px">88%</div><div class="meta">B.Tech CS · NIT</div></div>
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Domain fit</div><div class="val" style="font-size:18px">76%</div><div class="meta">SaaS</div></div>
+              </div>
+              <div class="result-tags">
+                <span class="tag tag-match">✓ Next.js</span>
+                <span class="tag tag-match">✓ TypeScript</span>
+                <span class="tag tag-miss">✗ tRPC</span>
+                <span class="tag tag-partial">~ Hono / Zod (similar)</span>
+                <span class="tag tag-match">✓ PostgreSQL</span>
+              </div>
+            </div>
+            <div class="result-actions">
+              <span class="pill pill-orange">Promising</span>
+              <div class="flex-col" style="gap:8px;width:100%">
+                <span class="text-sm text-muted text-bold" style="text-align:right">$5.0k / mo</span>
+                <a href="recruiter-resume-detail.html" class="btn btn-primary btn-sm">View resume →</a>
+                <button class="btn btn-outline btn-sm">⭐ Shortlist</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-card">
+            <div style="display:flex;align-items:center;justify-content:center">
+              <div class="score-ring amber" style="--p:79"><span class="pct">79%</span></div>
+            </div>
+            <div>
+              <div class="flex-gap-12 mb-8">
+                <div class="avatar lg">NB</div>
+                <div>
+                  <h3 class="result-name">Neha B.</h3>
+                  <p class="result-role">Full-Stack · Remote · 7 yrs</p>
+                </div>
+                <span class="pill pill-green pill-dot">Available now</span>
+                <span class="pill">B.Tech · IIT Madras</span>
+              </div>
+              <p class="result-summary">
+                <strong>Why a 79% match:</strong> Strong Rails/Hotwire background but pivoted to Next.js + tRPC over the last 18 months. Excellent education and Stripe billing depth. The shorter Next.js tenure is the main gap.
+              </p>
+              <div class="breakdown" style="grid-template-columns:repeat(4,1fr);gap:10px">
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Skills</div><div class="val" style="font-size:18px">75%</div><div class="meta">8 / 12 matched</div></div>
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Experience</div><div class="val" style="font-size:18px">68%</div><div class="meta">1.5 yrs Next.js</div></div>
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Education</div><div class="val" style="font-size:18px">98%</div><div class="meta">IIT Madras</div></div>
+                <div class="breakdown-card" style="padding:10px"><div class="lbl">Domain fit</div><div class="val" style="font-size:18px">90%</div><div class="meta">SaaS · Stripe</div></div>
+              </div>
+              <div class="result-tags">
+                <span class="tag tag-match">✓ Next.js (1.5y)</span>
+                <span class="tag tag-match">✓ TypeScript</span>
+                <span class="tag tag-match">✓ tRPC</span>
+                <span class="tag tag-match">✓ Stripe</span>
+                <span class="tag tag-partial">~ Postgres (basic)</span>
+              </div>
+            </div>
+            <div class="result-actions">
+              <span class="pill pill-orange">Promising</span>
+              <div class="flex-col" style="gap:8px;width:100%">
+                <span class="text-sm text-muted text-bold" style="text-align:right">$6.4k / mo</span>
+                <a href="recruiter-resume-detail.html" class="btn btn-primary btn-sm">View resume →</a>
+                <button class="btn btn-outline btn-sm">⭐ Shortlist</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex-between mt-24">
+            <span class="text-sm text-muted">Showing 1–5 of 38 ranked candidates</span>
+            <div class="flex-gap-8">
+              <button class="btn btn-outline btn-sm" disabled>← Prev</button>
+              <button class="btn btn-primary btn-sm">1</button>
+              <button class="btn btn-outline btn-sm">2</button>
+              <button class="btn btn-outline btn-sm">3</button>
+              <button class="btn btn-outline btn-sm">…</button>
+              <button class="btn btn-outline btn-sm">Next →</button>
+            </div>
+          </div>
+
+        </section>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">© 2026 GetDeveloper · AI Match prototype</div>
+  </footer>
+  <script src="./app.js"></script>
+</body>
+</html>
