@@ -47,11 +47,11 @@
         </div>
       </div>
 
-      <div class="card mb-24" style="display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center">
-        <div class="avatar xl">AK</div>
+      <div class="card mb-24" style="display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center" id="candidate-profile">
+        <div class="avatar xl" id="candidate-avatar">--</div>
         <div>
-          <h2 style="margin:0 0 4px;font-size:26px;letter-spacing:-0.4px">Arun K.</h2>
-          <p class="result-role" style="margin:0 0 12px">Senior Full-Stack Engineer · 6 years · Bangalore, India</p>
+          <h2 style="margin:0 0 4px;font-size:26px;letter-spacing:-0.4px" id="candidate-name">Loading...</h2>
+          <p class="result-role" style="margin:0 0 12px" id="candidate-role">--</p>
           <div class="flex-gap-8" style="flex-wrap:wrap">
             <span class="pill pill-green pill-dot">Available now</span>
             <span class="pill">B.Tech CS · IIT Roorkee · 2018</span>
@@ -76,8 +76,8 @@
       <div class="ai-banner">
         <div class="ai-icon">✨</div>
         <div style="flex:1">
-          <h4>AI Verdict: Strong recommendation — interview this week</h4>
-          <p>Arun matches every must-have skill, exceeds your experience requirement, and his SaaS + Stripe background overlaps directly with your billing rebuild. Only mild gap: AWS infra is limited (Vercel-heavy). Suggest a system-design round on the billing flow.</p>
+          <h4 id="candidate-verdict">AI Verdict</h4>
+          <p id="candidate-summary">Loading candidate analysis...</p>
         </div>
       </div>
 
@@ -90,51 +90,29 @@
         <div class="breakdown mb-24">
           <div class="breakdown-card">
             <div class="lbl">Skills match</div>
-            <div class="val">96%</div>
-            <div class="meta">11 of 12 required</div>
-            <div class="bar mt-12"><span style="width:96%"></span></div>
+            <div class="val" id="breakdown-skills">--</div>
+            <div class="meta">--</div>
+            <div class="bar mt-12"><span style="width:0%"></span></div>
           </div>
           <div class="breakdown-card">
             <div class="lbl">Experience match</div>
-            <div class="val">98%</div>
-            <div class="meta">6 yrs · req 5+</div>
-            <div class="bar mt-12"><span style="width:98%"></span></div>
-          </div>
-          <div class="breakdown-card">
-            <div class="lbl">Education match</div>
-            <div class="val">90%</div>
-            <div class="meta">B.Tech CS · IIT Tier 1</div>
-            <div class="bar mt-12"><span style="width:90%"></span></div>
+            <div class="val" id="breakdown-experience">--</div>
+            <div class="meta">--</div>
+            <div class="bar mt-12"><span style="width:0%"></span></div>
           </div>
           <div class="breakdown-card">
             <div class="lbl">Domain fit</div>
-            <div class="val">92%</div>
-            <div class="meta">SaaS billing · Stripe</div>
-            <div class="bar mt-12"><span style="width:92%"></span></div>
+            <div class="val" id="breakdown-domain">--</div>
+            <div class="meta">--</div>
+            <div class="bar mt-12"><span style="width:0%"></span></div>
           </div>
         </div>
 
         <div class="grid-2">
-          <div>
+          <div id="candidate-skills">
             <h4 style="margin:0 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">Required skills</h4>
-            <div class="flex-gap-8" style="flex-wrap:wrap">
-              <span class="tag tag-match">✓ Next.js 14</span>
-              <span class="tag tag-match">✓ React 18</span>
-              <span class="tag tag-match">✓ TypeScript (advanced)</span>
-              <span class="tag tag-match">✓ tRPC (2 yrs)</span>
-              <span class="tag tag-match">✓ Prisma</span>
-              <span class="tag tag-match">✓ PostgreSQL</span>
-              <span class="tag tag-match">✓ Multi-tenant SaaS</span>
-              <span class="tag tag-match">✓ Vercel CI/CD</span>
-              <span class="tag tag-partial">~ AWS (intermediate)</span>
-            </div>
-          </div>
-          <div>
-            <h4 style="margin:0 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">Nice-to-have skills</h4>
-            <div class="flex-gap-8" style="flex-wrap:wrap">
-              <span class="tag tag-match">✓ Stripe billing</span>
-              <span class="tag tag-miss">✗ Rails / Django</span>
-              <span class="tag tag-match">✓ OSS contributor (Prisma, tRPC)</span>
+            <div class="flex-gap-8" style="flex-wrap:wrap" id="candidate-tags">
+              <span class="tag tag-match">--</span>
             </div>
           </div>
         </div>
@@ -144,20 +122,15 @@
         <div class="grid-2">
           <div>
             <h4 style="margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">Strengths</h4>
-            <ul style="margin:0;padding-left:18px;font-size:14px;color:var(--ink-2)">
-              <li>Three production SaaS apps using Next.js + tRPC + Prisma</li>
-              <li>Stripe subscription + webhook integration in last 2 roles</li>
-              <li>Pull requests merged into Prisma open-source repo</li>
-              <li>Mentored 2 mid-level devs in current role — relevant to JD</li>
-            </ul>
+            <div id="candidate-strengths" class="flex-gap-8" style="flex-wrap:wrap">
+              <span class="tag tag-match">--</span>
+            </div>
           </div>
           <div>
-            <h4 style="margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">Gaps & questions to ask</h4>
-            <ul style="margin:0;padding-left:18px;font-size:14px;color:var(--ink-2)">
-              <li>Limited deep AWS experience — most deploys via Vercel</li>
-              <li>No prior Rails/Django (your nice-to-have)</li>
-              <li>Suggested screen: Postgres index strategy on a billing schema</li>
-            </ul>
+            <h4 style="margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">Gaps</h4>
+            <div id="candidate-gaps" class="flex-gap-8" style="flex-wrap:wrap">
+              <span class="tag tag-miss">--</span>
+            </div>
           </div>
         </div>
       </div>
@@ -166,137 +139,13 @@
 
         <div class="col" style="min-width:520px">
           <div class="card mb-24">
-            <h3 class="card-title mb-12">Summary</h3>
-            <p class="text-sm" style="color:var(--ink-2);margin:0">Senior full-stack engineer with 6 years building production SaaS in TypeScript, React, and Next.js. Specializes in type-safe end-to-end stacks (tRPC + Prisma) and multi-tenant Postgres schemas. Three SaaS products shipped to paying customers. Open-source contributor to Prisma and tRPC.</p>
+            <h3 class="card-title mb-12">Resume content</h3>
+            <div id="resume-content">
+              <p class="text-sm text-muted">Loading resume content...</p>
+            </div>
+            <p class="text-xs text-muted mt-12" style="display:none" id="drive-file-ref">Drive file: <span id="drive-file-id">--</span></p>
           </div>
 
-          <div class="card mb-24">
-            <h3 class="card-title mb-12">Experience</h3>
-
-            <div class="mb-24">
-              <div class="flex-between mb-8">
-                <div>
-                  <div class="text-bold">Senior Software Engineer</div>
-                  <div class="text-sm text-muted">Razorpay · Bangalore</div>
-                </div>
-                <span class="text-sm text-muted">2023 – Present</span>
-              </div>
-              <ul style="margin:0;padding-left:18px;font-size:14px;color:var(--ink-2)">
-                <li>Lead engineer on the merchant dashboard rebuild — Next.js 14 App Router + tRPC + Prisma + Postgres.</li>
-                <li>Reduced p95 dashboard load from 1.4s to 320ms via React Server Components and query plan tuning.</li>
-                <li>Designed multi-tenant Postgres schema for 40k+ merchants; mentored 2 mid-level engineers.</li>
-              </ul>
-            </div>
-
-            <div class="mb-24">
-              <div class="flex-between mb-8">
-                <div>
-                  <div class="text-bold">Full-Stack Engineer</div>
-                  <div class="text-sm text-muted">CRED · Remote</div>
-                </div>
-                <span class="text-sm text-muted">2020 – 2023</span>
-              </div>
-              <ul style="margin:0;padding-left:18px;font-size:14px;color:var(--ink-2)">
-                <li>Built credit card rewards portal — React + Node.js + DynamoDB; scaled to 8M monthly users.</li>
-                <li>Owned Stripe + Razorpay subscription billing integration including webhook reconciliation.</li>
-              </ul>
-            </div>
-
-            <div>
-              <div class="flex-between mb-8">
-                <div>
-                  <div class="text-bold">Software Engineer</div>
-                  <div class="text-sm text-muted">Zoho · Chennai</div>
-                </div>
-                <span class="text-sm text-muted">2018 – 2020</span>
-              </div>
-              <ul style="margin:0;padding-left:18px;font-size:14px;color:var(--ink-2)">
-                <li>Built internal tooling on the Zoho CRM platform; first production exposure to multi-tenant architecture.</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="card">
-            <h3 class="card-title mb-12">Projects & open source</h3>
-            <div class="mb-12">
-              <div class="text-bold">prisma-zod-generator (50★ on GitHub)</div>
-              <div class="text-sm text-muted">Author · TypeScript</div>
-              <p class="text-sm" style="margin:6px 0 0">Generates Zod schemas from a Prisma schema. Used in production at 4 companies.</p>
-            </div>
-            <hr class="divider">
-            <div>
-              <div class="text-bold">trpc/trpc</div>
-              <div class="text-sm text-muted">Contributor · 6 PRs merged</div>
-              <p class="text-sm" style="margin:6px 0 0">Performance fixes for the React Query adapter and docs for App Router integration.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="col" style="min-width:300px">
-          <div class="card mb-24">
-            <h3 class="card-title mb-12">Education</h3>
-            <div class="text-bold">B.Tech, Computer Science</div>
-            <div class="text-sm text-muted">IIT Roorkee · 2014 – 2018</div>
-            <p class="text-sm" style="margin:8px 0 0">CGPA 8.6 / 10 · Inter-IIT Tech Meet finalist</p>
-          </div>
-
-          <div class="card mb-24">
-            <h3 class="card-title mb-12">Vetting summary</h3>
-            <div class="flex-between mb-8 text-sm">
-              <span>CV + GitHub review</span>
-              <span class="pill pill-green">✓ Passed</span>
-            </div>
-            <div class="flex-between mb-8 text-sm">
-              <span>Framework deep-dive (Next.js 14)</span>
-              <span class="pill pill-green">✓ Passed</span>
-            </div>
-            <div class="flex-between mb-8 text-sm">
-              <span>Live interview (senior eng)</span>
-              <span class="pill pill-green">✓ Passed</span>
-            </div>
-            <div class="flex-between mb-8 text-sm">
-              <span>Background + references</span>
-              <span class="pill pill-green">✓ Verified</span>
-            </div>
-            <p class="text-xs text-muted mt-12 mb-0">Vetted on 14 Mar 2026 · Score: 91/100</p>
-          </div>
-
-          <div class="card mb-24">
-            <h3 class="card-title mb-12">Logistics</h3>
-            <div class="flex-between text-sm mb-8"><span class="text-muted">Notice period</span><span class="text-bold">2 weeks</span></div>
-            <div class="flex-between text-sm mb-8"><span class="text-muted">Expected rate</span><span class="text-bold">$5.8k / mo</span></div>
-            <div class="flex-between text-sm mb-8"><span class="text-muted">Engagement</span><span class="text-bold">FT or contract</span></div>
-            <div class="flex-between text-sm mb-8"><span class="text-muted">Timezone overlap</span><span class="text-bold">4–5 hrs (US east)</span></div>
-            <div class="flex-between text-sm"><span class="text-muted">Relocation</span><span class="text-bold">Open · within India</span></div>
-          </div>
-
-          <div class="card">
-            <h3 class="card-title mb-12">Similar candidates</h3>
-            <div class="flex-gap-12 mb-12" style="align-items:center">
-              <div class="avatar orange">RD</div>
-              <div style="flex:1">
-                <div class="text-sm text-bold">Rohan D.</div>
-                <div class="text-xs text-muted">Pune · 7 yrs</div>
-              </div>
-              <span class="pill pill-orange">91%</span>
-            </div>
-            <div class="flex-gap-12 mb-12" style="align-items:center">
-              <div class="avatar green">PG</div>
-              <div style="flex:1">
-                <div class="text-sm text-bold">Priya G.</div>
-                <div class="text-xs text-muted">Bangalore · 5 yrs</div>
-              </div>
-              <span class="pill pill-orange">88%</span>
-            </div>
-            <div class="flex-gap-12" style="align-items:center">
-              <div class="avatar violet">VS</div>
-              <div style="flex:1">
-                <div class="text-sm text-bold">Vikram S.</div>
-                <div class="text-xs text-muted">Hyderabad · 6 yrs</div>
-              </div>
-              <span class="pill pill-orange">82%</span>
-            </div>
-          </div>
         </div>
       </div>
 

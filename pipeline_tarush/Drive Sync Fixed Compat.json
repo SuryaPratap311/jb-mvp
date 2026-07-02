@@ -1,0 +1,860 @@
+{
+  "name": "Drive Sync Fixed Compat",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "drive-sync-tarush",
+        "options": {}
+      },
+      "id": "a5e07144-1378-4e09-a21a-71c55acdfd28",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        2896,
+        1552
+      ],
+      "webhookId": "ffcf6fff-721c-4974-9818-877f48430938"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/drive/v3/files",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "mimeType='application/pdf' and trashed=false"
+            },
+            {
+              "name": "fields",
+              "value": "nextPageToken,files(id,name,mimeType,modifiedTime,size)"
+            },
+            {
+              "name": "pageSize",
+              "value": "100"
+            },
+            {
+              "name": "spaces",
+              "value": "drive"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "637f3d09-5085-4fc9-b357-c8c2d4a11cf0",
+      "name": "HTTP Request - Search Files",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        4368,
+        1552
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "LNWoIbJC7Np0bUeh",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst files = items[0]?.json?.files || [];\nreturn files.map(file => ({ json: file }));"
+      },
+      "id": "a20901e1-83b6-4c0e-91eb-4ccf16241f3f",
+      "name": "Code - Split Files Array",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4592,
+        1552
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "9abc9a4e-967b-4c7f-8634-d65eb2b5214d",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        4912,
+        1456
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://www.googleapis.com/drive/v3/files/{{ $json.id }}?alt=media",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "1d87729b-c4e7-4147-9b07-c96e8d90dd34",
+      "name": "HTTP Request - Download File",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        5120,
+        1216
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "LNWoIbJC7Np0bUeh",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const fileId = $('Split In Batches').item.json.id;\nconst fileName = $('Split In Batches').item.json.name;\nconst mimeType = $('Split In Batches').item.json.mimeType;\nconst modifiedTime = $('Split In Batches').item.json.modifiedTime;\nconst fileSize = $('Split In Batches').item.json.size;\n\nconst rawText = $json.text || $json.extractedText || $json.content || '';\nconst parsedText = rawText\n  .replace(/\\s+/g, ' ')\n  .replace(/\\u0000/g, '')\n  .trim()\n  .slice(0, 20000);\n\nreturn {\n  json: {\n    drive_file_id: fileId,\n    filename: fileName,\n    parsed_text: parsedText || `[File: ${fileName}] [No extractable text found]`,\n    mime_type: mimeType,\n    modified_time: modifiedTime,\n    file_size: fileSize,\n    has_text: !!parsedText\n  }\n};"
+      },
+      "id": "11806e60-2612-49c5-aa98-52ef6c47dc4f",
+      "name": "Code - Parse PDF",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5584,
+        1264
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "collection": "resumes",
+        "updateKey": "drive_file_id",
+        "fields": "drive_file_id,filename,parsed_text,embedding,mime_type,file_size,modified_time",
+        "upsert": true,
+        "options": {}
+      },
+      "id": "bdab8806-46a1-4598-9f61-5233762da07a",
+      "name": "MongoDB - Insert Resume",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1,
+      "position": [
+        6528,
+        1408
+      ],
+      "credentials": {
+        "mongoDb": {
+          "id": "9gFg2W5MNrEUlEOS",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { synced: true, file: $json.filename, drive_file_id: $json.drive_file_id } }}",
+        "options": {}
+      },
+      "id": "f791836f-9eca-4f3b-93c6-89af314a3505",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        6816,
+        1584
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1aebb57b-cab3-47b0-954e-4e94a8bc75d0",
+              "name": "=jd",
+              "value": "={{ $json.body.jd }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1891dcbd-4161-4502-a396-8e866e153934",
+      "name": "Set JD",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3120,
+        1904
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "f4f35f25-3bdb-41d5-a64e-c46e58aff258",
+      "name": "Merge JD + Embedding",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3776,
+        1904
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0f118a56-8bfa-4ce8-afe4-7209dfcd92e5",
+              "name": "jd",
+              "value": "={{ $('Set JD').first().json.jd }}",
+              "type": "string"
+            },
+            {
+              "id": "a26df441-5090-4f15-a228-ced659a3bc08",
+              "name": "queryVector",
+              "value": "={{ $('Merge JD + Embedding').first().json.data[0].embedding }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2de76c8c-4e15-499d-9ff2-9c0fe33dfeaa",
+      "name": "Set Query Vector",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2432,
+        2496
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const jd = $('Set JD').first().json.jd;\n\nconst seen = new Set();\nconst candidates = $input.all()\n  .map(item => item.json)\n  .filter(c => {\n    const key = c.drive_file_id || c.filename || c._id;\n    if (!key || seen.has(key)) return false;\n    seen.add(key);\n    return true;\n  })\n  .filter(c => {\n    const text = (c.parsed_text || '').trim();\n    return text &&\n      !text.includes('[No extractable text found]') &&\n      text.length > 80;\n  })\n  .slice(0, 10);\n\nconst formatted = candidates.map((c, i) => {\n  const text = (c.parsed_text || '').substring(0, 1200);\n  return `Candidate ${i + 1}:\ndrive_file_id: ${c.drive_file_id || 'Unknown'}\nFile: ${c.filename || 'Unknown'}\nText: ${text}`;\n}).join('\\n\\n---\\n\\n');\n\nreturn [{\n  json: {\n    jd,\n    candidates_text: formatted,\n    candidate_list: candidates\n  }\n}];"
+      },
+      "id": "9a5c2dda-5ce4-439f-bfe3-eca03f4b5f50",
+      "name": "Code - Format Candidates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4656,
+        1904
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "match-candidates-tarush",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "db720b88-13df-4f86-8b89-c9cc2453e6a9",
+      "name": "Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        2896,
+        1904
+      ],
+      "webhookId": "7ee3061f-ba91-494e-ae61-8f43c4cae503"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\": \"done\"}",
+        "options": {}
+      },
+      "id": "3f24bc0c-2d6e-44b2-9923-c1c2aa51c140",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        5824,
+        1952
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "aggregate",
+        "collection": "resumes",
+        "query": "={{ JSON.stringify($json.mongoQuery) }}"
+      },
+      "id": "1f40ce89-0015-4d5f-8702-a6dfede429f9",
+      "name": "MongoDB - Vector Search",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1,
+      "position": [
+        4432,
+        1904
+      ],
+      "credentials": {
+        "mongoDb": {
+          "id": "9gFg2W5MNrEUlEOS",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=    {                                                                                                                        \n    \"model\": \"text-embedding-3-small\",                                                                                       \n    \"input\": \"{{ $json.jd }}\"\n  }  ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3376,
+        2016
+      ],
+      "id": "3aff98ff-09b7-44a3-a506-5e26fe9af359",
+      "name": "HTTP Request",
+      "credentials": {
+        "openAiApi": {
+          "id": "aMnEgMJrWvNLghho",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const jd = $('Set JD').first().json.jd;\nconst queryVector = $('Merge JD + Embedding').first().json.data[0].embedding;\n\nreturn [{\n  json: {\n    jd,\n    mongoQuery: [\n      {\n        $vectorSearch: {\n          index: \"resume_vector_index\",\n          path: \"embedding\",\n          queryVector,\n          numCandidates: 100,\n          limit: 10\n        }\n      }\n    ]\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4208,
+        1904
+      ],
+      "id": "dea1f7c8-af99-4574-baa9-c2f73c7cb950",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.requestBody) }} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        5136,
+        2272
+      ],
+      "id": "46263ff7-1694-4df1-8752-3d69723c50fa",
+      "name": "HTTP Request1",
+      "credentials": {
+        "openAiApi": {
+          "id": "aMnEgMJrWvNLghho",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = {\n  model: \"gpt-4o-mini\",\n  messages: [\n    {\n      role: \"system\",\n      content: `\nYou are a recruiter AI.\n\nUse only the candidate text provided.\nDo not invent skills, tools, projects, or experience.\nIf evidence is missing, score lower and explicitly mention that the evidence is missing.\nEach explanation must reference at least one concrete detail or phrase from the candidate text, or clearly state that the resume text does not provide enough evidence.\nAlways preserve the exact drive_file_id and filename from the input candidate block.\nDo not make up IDs, filenames, or candidate details.\nReturn exactly one ranking item for each candidate block provided in the input. Do not skip or merge candidates.\n\nReturn a STRICT JSON object with exactly one top-level key: \"rankings\".\n\nThe value of \"rankings\" must be an array.\n\nEach item in the array must contain:\n- drive_file_id (string)\n- filename (string)\n- match_score (number, 0-100)\n- skills_match (number, 0-100)\n- experience_match (number, 0-100)\n- domain_fit (number, 0-100)\n- explanation (string, maximum 2 sentences)\n- strengths (array of strings, maximum 3 items)\n- gaps (array of strings, maximum 3 items)\n\nReturn ONLY valid JSON.\nDo NOT include markdown.\nDo NOT include code fences.\nDo NOT include any text outside the JSON object.\n      `.trim(),\n    },\n    {\n      role: \"user\",\n      content:\n        \"Job Description: \" +\n        $input.first().json.jd +\n        \"\\n\\nCandidates:\\n\" +\n        $input.first().json.candidates_text,\n    },\n  ],\n  response_format: {\n    type: \"json_object\",\n  },\n};\n\nreturn [\n  {\n    json: {\n      requestBody: body,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4912,
+        2112
+      ],
+      "id": "cd134cdf-d0ba-4fdc-9ae8-ef4d139d1fbd",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "jsCode": "  const content = $input.first().json.choices[0].message.content;                                                            \n  const rankings = JSON.parse(content);\n  return [{ json: rankings }]; "
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5312,
+        2240
+      ],
+      "id": "0c93185a-c7bd-45b3-a40f-e252cf652ee5",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "text-embedding-3-small"
+            },
+            {
+              "name": "input",
+              "value": "={{$json.parsed_text}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        5808,
+        1376
+      ],
+      "id": "f3e72709-646e-4874-b7df-13175d70eb88",
+      "name": "HTTP Request - Create Embedding",
+      "credentials": {
+        "openAiApi": {
+          "id": "aMnEgMJrWvNLghho",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        6096,
+        1280
+      ],
+      "id": "8dd404c2-2eba-42a8-93a8-f3a289ad5be5",
+      "name": "Merge PDF + Embedding"
+    },
+    {
+      "parameters": {
+        "jsCode": "const mergeData = $input.first().json;\n\nconst embedding =\n  mergeData.data?.[0]?.embedding ||\n  mergeData.embedding ||\n  [];\n\nreturn [{\n  json: {\n    drive_file_id: mergeData.drive_file_id || '',\n    filename: mergeData.filename || '',\n    parsed_text: mergeData.parsed_text || '',\n    embedding: embedding,\n    mime_type: mergeData.mime_type || '',\n    file_size: mergeData.file_size || '',\n    modified_time: mergeData.modified_time || ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6336,
+        1312
+      ],
+      "id": "ddf3f872-e13b-49f1-8b82-c3629903a590",
+      "name": "Prepare MongoDB Document"
+    },
+    {
+      "parameters": {
+        "jsCode": "  const syncId = Date.now().toString();                                                                                      \n  return [{                            \n    json: {                                                                                                                  \n      sync_id: syncId,\n      status: \"in_progress\",                                                                                                 \n      started_at: new Date().toISOString(),                    \n      files_total: 5,                      \n      files_synced: 0,\n      message: \"Sync started\"\n    }\n  }];       "
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3104,
+        1552
+      ],
+      "id": "669ea8e5-36bc-40c5-a05e-2576c1a4e7a1",
+      "name": "Create Sync Status"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "collection": "sync_status",
+        "updateKey": "sync_id",
+        "fields": "sync_id,status,started_at,files_total,files_synced,message",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.3,
+      "position": [
+        5792,
+        1632
+      ],
+      "id": "048d77ff-9dc6-480f-a767-f258957324cf",
+      "name": "Sync Status",
+      "credentials": {
+        "mongoDb": {
+          "id": "9gFg2W5MNrEUlEOS",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    sync_id: $('Create Sync Status').first().json.sync_id,\n    status: \"completed\",\n    started_at: $('Create Sync Status').first().json.started_at,\n    files_total: $('Create Sync Status').first().json.files_total,\n    files_synced: 5,\n    message: \"Sync completed successfully\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5552,
+        1616
+      ],
+      "id": "c306001f-7c39-491c-828c-177dc484752b",
+      "name": "Update Status of SYNC"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "sync_status",
+        "fields": "sync_id,status,started_at,files_total,files_synced,message",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.3,
+      "position": [
+        3728,
+        1552
+      ],
+      "id": "5ab2de76-c614-4b22-be6d-2a3a51dc9d91",
+      "name": "MongoDB Insert sync_status",
+      "credentials": {
+        "mongoDb": {
+          "id": "9gFg2W5MNrEUlEOS",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        5328,
+        1216
+      ],
+      "id": "5703d191-e024-4634-b54d-a6b5b4440c1b",
+      "name": "Extract from File"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Create Sync Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Search Files": {
+      "main": [
+        [
+          {
+            "node": "Code - Split Files Array",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Split Files Array": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Update Status of SYNC",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request - Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Download File": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Parse PDF": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Create Embedding",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge PDF + Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB - Insert Resume": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set JD": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge JD + Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge JD + Embedding": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Query Vector": {
+      "main": [
+        []
+      ]
+    },
+    "Code - Format Candidates": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Set JD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB - Vector Search": {
+      "main": [
+        [
+          {
+            "node": "Code - Format Candidates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Merge JD + Embedding",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "MongoDB - Vector Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - Create Embedding": {
+      "main": [
+        [
+          {
+            "node": "Merge PDF + Embedding",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge PDF + Embedding": {
+      "main": [
+        [
+          {
+            "node": "Prepare MongoDB Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare MongoDB Document": {
+      "main": [
+        [
+          {
+            "node": "MongoDB - Insert Resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Sync Status": {
+      "main": [
+        [
+          {
+            "node": "MongoDB Insert sync_status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sync Status": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status of SYNC": {
+      "main": [
+        [
+          {
+            "node": "Sync Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB Insert sync_status": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Search Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code - Parse PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "f4cf2f5a-f4a6-4d05-8e6e-46df66d809d6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e717a1421f4b6dce43d7723999bb435481f07c8d6b6cf56d78e1a88170d9a147"
+  },
+  "nodeGroups": [],
+  "id": "Sjrymx9n6GzdLxKq",
+  "tags": []
+}

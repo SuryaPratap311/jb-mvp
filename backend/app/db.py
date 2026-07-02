@@ -16,7 +16,7 @@ def _get_client() -> AsyncIOMotorClient:
 def get_db():
     global _database
     if _database is None:
-        _database = _get_client().get_default_database()
+        _database = _get_client().get_database("getdeveloper_user")
     return _database
 
 
@@ -30,6 +30,10 @@ def resumes_collection():
 
 def matches_collection():
     return get_db().get_collection("matches")
+
+
+def sync_status_collection():
+    return get_db().get_collection("sync_status")
 
 
 async def ensure_indexes():

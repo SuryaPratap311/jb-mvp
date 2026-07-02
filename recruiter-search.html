@@ -43,6 +43,27 @@
         </div>
       </div>
 
+      <!-- Sync status banner -->
+      <div id="sync-status-banner" class="card mb-24" style="display:none;padding:16px 20px">
+        <div class="flex-between" style="align-items:center">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span id="sync-status-icon">⏳</span>
+            <div>
+              <div id="sync-status-title" class="text-sm text-bold" style="margin-bottom:2px">Syncing...</div>
+              <div id="sync-status-msg" class="text-xs text-muted">Connecting to Google Drive</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div id="sync-progress" style="display:none">
+              <div class="bar" style="width:120px;height:6px;background:var(--line);border-radius:3px;overflow:hidden">
+                <span id="sync-progress-bar" style="display:inline-block;height:100%;background:var(--primary);width:0%;transition:width 0.3s"></span>
+              </div>
+            </div>
+            <span id="sync-status-count" class="text-xs text-muted" style="display:none">0 / 0</span>
+          </div>
+        </div>
+      </div>
+
       <div class="card mb-24" style="padding:8px">
         <div class="flex-gap-8" style="background:var(--surface-2);padding:4px;border-radius:10px">
           <button class="btn btn-primary btn-sm" style="flex:1">Paste JD</button>

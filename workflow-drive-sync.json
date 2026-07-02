@@ -44,7 +44,9 @@
       "position": [650, 300],
       "parameters": {
         "batchSize": 1,
-        "options": {}
+        "options": {
+          "loopOverItems": true
+        }
       }
     },
     {
@@ -78,41 +80,54 @@
       "typeVersion": 2,
       "position": [1050, 300],
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "jsCode": "const items = $input.all();\nconst item = items[0];\nconst binaryData = item.binary.data;\nconst buffer = Buffer.from(binaryData.data, 'base64');\n\n// For n8n cloud, return the buffer info and parse later\nreturn [{\n  json: {\n    drive_file_id: item.json.id,\n    filename: item.json.name,\n    mime_type: item.json.mimeType,\n    modified_time: item.json.modifiedTime,\n    file_size: item.json.size,\n    pdf_base64: binaryData.data\n  }\n}];"
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst binaryData = item.binary.data;\nconst buffer = Buffer.from(binaryData.data, 'base64');\n\n// Try to extract text from PDF\n// Note: Full PDF parsing requires pdf-parse library which may not be available in n8n cloud\n// This is a placeholder - actual implementation would need external PDF parsing service\nlet parsedText = '[PDF content - extraction not available in n8n cloud] ' + item.json.name;\n\n// If we had pdf-parse available:\n// const pdfParse = require('pdf-parse');\n// const pdfData = await pdfParse(buffer);\n// parsedText = pdfData.text;\n\nreturn [{\n  json: {\n    drive_file_id: item.json.id,\n    filename: item.json.name,\n    mime_type: item.json.mimeType,\n    modified_time: item.json.modifiedTime,\n    file_size: item.json.size,\n    parsed_text: parsedText,\n    binary_data: binaryData.data\n  }\n}];"
       }
     },
     {
-      "id": "openai-embed-node",
-      "name": "OpenAI - Create Embedding",
-      "type": "n8n-nodes-base.openAi",
-      "typeVersion": 1,
+      "id": "http-embed-node",
+      "name": "HTTP Request - Create Embedding",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
       "position": [1250, 300],
       "parameters": {
-        "resource": "text",
-        "operation": "customApiCall",
-        "requestMethod": "POST",
-        "url": "/embeddings",
-        "jsonParameters": true,
-        "options": {},
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "model",
-              "value": "text-embedding-3-small"
-            },
-            {
-              "name": "input",
-              "value": "={{ $json.pdf_base64 }}"
-            }
-          ]
-        }
+        "url": "https://api.openai.com/v1/embeddings",
+        "method": "POST",
+        "authentication": "predefinedCredentialType",
+        "genericAuthType": "openAiApi",
+        "sendQuery": false,
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"model\": \"text-embedding-3-small\",\n  \"input\": {{ $json.parsed_text | json }}\n}",
+        "options": {}
       },
       "credentials": {
         "openAiApi": {
           "id": "",
           "name": "OpenAI account"
         }
+      }
+    },
+    {
+      "id": "merge-node",
+      "name": "Merge PDF + Embedding",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [1350, 300],
+      "parameters": {
+        "mode": "multiplex",
+        "join": "outer",
+        "options": {}
+      }
+    },
+    {
+      "id": "code-prepare-embed-node",
+      "name": "Code - Prepare Embedding",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1350, 350],
+      "parameters": {
+        "jsCode": "// Get the embedding from OpenAI response\nconst embeddingResponse = $input.first().json;\n\n// Extract embedding array\nconst embedding = embeddingResponse.data[0].embedding;\n\n// The PDF data should come via the merge, but if not available use placeholders\nreturn [{\n  json: {\n    embedding: embedding,\n    drive_file_id: $('Code - Parse PDF').first().json.drive_file_id || '',\n    filename: $('Code - Parse PDF').first().json.filename || '',\n    parsed_text: $('Code - Parse PDF').first().json.parsed_text || '',\n    mime_type: $('Code - Parse PDF').first().json.mime_type || '',\n    file_size: $('Code - Parse PDF').first().json.file_size || '',\n    modified_time: $('Code - Parse PDF').first().json.modified_time || ''\n  }\n}];"
       }
     },
     {
@@ -125,7 +140,7 @@
         "operation": "insert",
         "collection": "resumes",
         "database": "getdeveloper",
-        "document": "={\"drive_file_id\": \"{{ $json.drive_file_id }}\", \"filename\": \"{{ $json.filename }}\", \"parsed_text\": \"{{ $json.pdf_base64 }}\", \"embedding\": [0.1, 0.2, 0.3], \"file_meta\": {\"mime_type\": \"{{ $json.mime_type }}\", \"size\": {{ $json.file_size }}, \"drive_modified_time\": \"{{ $json.modified_time }}\"}}",
+        "document": "={\n  \"drive_file_id\": \"{{ $json.drive_file_id }}\",\n  \"filename\": \"{{ $json.filename }}\",\n  \"parsed_text\": \"{{ $json.parsed_text }}\",\n  \"embedding\": {{ $json.embedding }},\n  \"file_meta\": {\n    \"mime_type\": \"{{ $json.mime_type }}\",\n    \"size\": \"{{ $json.file_size }}\",\n    \"drive_modified_time\": \"{{ $json.modified_time }}\"\n  }\n}",
         "options": {
           "skipVersioning": true
         }
@@ -178,6 +193,13 @@
       "main": [
         [
           {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Google Drive - Download File",
             "type": "main",
             "index": 0
@@ -200,14 +222,43 @@
       "main": [
         [
           {
-            "node": "OpenAI - Create Embedding",
+            "node": "HTTP Request - Create Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge PDF + Embedding",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "OpenAI - Create Embedding": {
+    "HTTP Request - Create Embedding": {
+      "main": [
+        [
+          {
+            "node": "Merge PDF + Embedding",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge PDF + Embedding": {
+      "main": [
+        [
+          {
+            "node": "Code - Prepare Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Prepare Embedding": {
       "main": [
         [
           {
@@ -222,7 +273,7 @@
       "main": [
         [
           {
-            "node": "Respond to Webhook",
+            "node": "Split In Batches",
             "type": "main",
             "index": 0
           }
