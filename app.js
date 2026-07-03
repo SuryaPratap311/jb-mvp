@@ -384,25 +384,27 @@ function getInitials(name) {
    INIT
    =========================== */
 document.addEventListener('DOMContentLoaded', () => {
-  // Wire search form
+  const path = window.location.pathname;
+
+  // Wire search form — show on "/" OR "/search" OR "recruiter-search"
   const form = document.getElementById('match-form');
-  if (form && window.location.pathname.includes('recruiter-search')) {
+  if (form && (path === '/' || path.includes('search'))) {
     form.addEventListener('submit', runMatch);
   }
 
   // Render results if on results page
-  if (window.location.pathname.includes('recruiter-results')) {
+  if (path.includes('results')) {
     renderResults();
   }
 
   // Load candidate detail if on detail page
-  if (window.location.pathname.includes('recruiter-resume-detail')) {
+  if (path.includes('resume')) {
     loadCandidateDetail();
   }
 
-  // Add sync button to nav if on search page
+  // Add sync button — show on "/" OR "/search" OR "recruiter-search"
   const nav = document.querySelector('.nav-links');
-  if (nav && window.location.pathname.includes('recruiter-search')) {
+  if (nav && (path === '/' || path.includes('search'))) {
     const syncBtn = document.createElement('a');
     syncBtn.href = '#';
     syncBtn.id = 'sync-btn';
