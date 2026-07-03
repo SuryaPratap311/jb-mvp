@@ -46,63 +46,108 @@ function hideSyncBanner() {
 /* ===========================
    DRIVE SYNC
    =========================== */
+let _syncPoller = null;
+
 async function syncDrive() {
   const btn = document.getElementById('sync-btn');
-  if (btn) { btn.textContent = '⏳ Syncing...'; btn.disabled = true; }
-
-  showSyncBanner('in_progress', 'Syncing resumes', 'Connecting to Google Drive...', '⏳');
 
   try {
-    // Trigger sync via n8n
     const triggerRes = await fetch(`${API_BASE}/api/drive/sync`, { method: 'POST' });
     const triggerData = await triggerRes.json();
 
     if (triggerData.error) {
       showSyncBanner('error', 'Sync failed', triggerData.error, '❌');
       setTimeout(hideSyncBanner, 4000);
-      if (btn) { btn.textContent = 'Sync Drive'; btn.disabled = false; }
       return;
     }
 
-    // Poll for sync status
-    let status = 'in_progress';
-    while (status === 'in_progress') {
-      await new Promise(r => setTimeout(r, 3000));
-      try {
-        const statusRes = await fetch(`${API_BASE}/api/drive/status`);
-        const statusData = await statusRes.json();
-        const s = statusData.sync_status;
-        status = s?.status || 'completed';
-
-        if (status === 'in_progress') {
-          const synced = s?.files_synced || 0;
-          const total = s?.files_total || 0;
-          const pct = total > 0 ? Math.round((synced / total) * 100) : 0;
-          showSyncBanner('in_progress', `Syncing resumes (${synced}/${total})`, s?.message || 'Processing...', '🔄', pct, synced, total);
-          if (btn) btn.textContent = `⏳ Syncing... ${synced}/${total}`;
-        }
-      } catch {
-        break;
-      }
+    // If already running, just start polling — don't disable btn again
+    if (triggerData.already_running) {
+      showSyncBanner('in_progress', 'Sync already running', 'Attaching to existing sync...', '⏳');
+    } else {
+      if (btn) { btn.textContent = '⏳ Syncing...'; btn.disabled = true; }
+      showSyncBanner('in_progress', 'Syncing resumes', 'Connecting to Google Drive...', '⏳');
     }
 
-    // Show final result
-    const finalRes = await fetch(`${API_BASE}/api/drive/status`);
-    const finalData = await finalRes.json();
-    const fs = finalData.sync_status;
-    const totalResumes = finalData.total_resumes || fs?.files_synced || 0;
-    showSyncBanner('done', 'Sync complete', `${totalResumes} resumes synced from Google Drive`, '✅');
-    if (btn) { btn.textContent = '✅ Synced'; btn.disabled = false; }
-    setTimeout(() => {
-      hideSyncBanner();
-      if (btn) btn.textContent = 'Sync Drive';
-    }, 5000);
+    _startSyncPolling(btn);
 
   } catch (e) {
     showSyncBanner('error', 'Sync failed', e.message, '❌');
     if (btn) { btn.textContent = 'Sync Drive'; btn.disabled = false; }
     setTimeout(hideSyncBanner, 4000);
   }
+}
+
+function _startSyncPolling(btn) {
+  if (_syncPoller) clearInterval(_syncPoller);
+
+  _syncPoller = setInterval(async () => {
+    try {
+      const statusRes = await fetch(`${API_BASE}/api/drive/status`);
+      const statusData = await statusRes.json();
+      const s = statusData.sync_status;
+
+      if (!s) return;
+
+      const status = s.status;
+
+      if (status === 'pending') {
+        showSyncBanner('in_progress', 'Sync queued', s.message || 'Waiting for pipeline...', '⏳');
+        if (btn) btn.textContent = '⏳ Queued...';
+        _showResetButton();  // ← show reset option while pending
+
+      } else if (status === 'running') {
+        _hideResetButton();
+        const synced = s.files_synced || 0;
+        const total = s.files_total || 0;
+        const pct = total > 0 ? Math.round((synced / total) * 100) : 0;
+        showSyncBanner('in_progress', `Syncing resumes (${synced}/${total})`, s.message || 'Processing...', '🔄', pct, synced, total);
+        if (btn) btn.textContent = `⏳ Syncing... ${synced}/${total}`;
+
+      } else if (status === 'completed') {
+        clearInterval(_syncPoller); _syncPoller = null;
+        _hideResetButton();
+        const totalResumes = statusData.total_resumes || s.files_synced || 0;
+        showSyncBanner('done', 'Sync complete', `${totalResumes} resumes synced from Google Drive`, '✅');
+        if (btn) { btn.textContent = '✅ Synced'; btn.disabled = false; }
+        setTimeout(() => { hideSyncBanner(); if (btn) btn.textContent = 'Sync Drive'; }, 5000);
+
+      } else if (status === 'failed') {
+        clearInterval(_syncPoller); _syncPoller = null;
+        _hideResetButton();
+        showSyncBanner('error', 'Sync failed', s.message || 'Pipeline error', '❌');
+        if (btn) { btn.textContent = 'Sync Drive'; btn.disabled = false; }
+        setTimeout(hideSyncBanner, 4000);
+      }
+
+    } catch {
+      // network hiccup — keep polling
+    }
+  }, 2500);
+}
+
+function _showResetButton() {
+  const banner = document.getElementById('sync-status-banner');
+  if (!banner || banner.querySelector('#sync-reset-btn')) return;
+  const resetBtn = document.createElement('button');
+  resetBtn.id = 'sync-reset-btn';
+  resetBtn.className = 'btn btn-outline btn-sm';
+  resetBtn.style = 'margin-top:8px;display:block';
+  resetBtn.textContent = '↺ Force new sync';
+  resetBtn.onclick = async () => {
+    await fetch(`${API_BASE}/api/drive/sync/reset`, { method: 'POST' });
+    clearInterval(_syncPoller);
+    _syncPoller = null;
+    _hideResetButton();
+    const btn = document.getElementById('sync-btn');
+    if (btn) { btn.textContent = 'Sync Drive'; btn.disabled = false; }
+    hideSyncBanner();
+  };
+  banner.appendChild(resetBtn);
+}
+
+function _hideResetButton() {
+  document.getElementById('sync-reset-btn')?.remove();
 }
 
 /* ===========================
