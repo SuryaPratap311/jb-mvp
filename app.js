@@ -1,7 +1,7 @@
 // GetDeveloper MVP — Frontend JS (No Auth)
 // Connects static HTML to FastAPI Backend → n8n Webhooks
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = window.location.origin;
 
 /* ===========================
    SYNC STATUS HELPERS

@@ -6,7 +6,28 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
 from app.routers import auth, drive, match, resumes
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
+# Mount static assets (CSS, JS)
+app.mount("/static", StaticFiles(directory="../"), name="static")
+
+# Serve each HTML page
+@app.get("/")
+async def root():
+    return FileResponse("../recruiter-search.html")
+
+@app.get("/search")
+async def search_page():
+    return FileResponse("../recruiter-search.html")
+
+@app.get("/results")
+async def results_page():
+    return FileResponse("../recruiter-results.html")
+
+@app.get("/resume")
+async def resume_page():
+    return FileResponse("../recruiter-resume-detail.html")
 settings = get_settings()
 
 

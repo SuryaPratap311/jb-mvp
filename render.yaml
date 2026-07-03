@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: jb-mvp
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: N8N_SYNC_URL
+        sync: false
+      - key: N8N_MATCH_URL
+        sync: false
