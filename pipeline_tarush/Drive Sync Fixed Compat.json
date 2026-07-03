@@ -117,7 +117,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const fileId = $('Split In Batches').item.json.id;\nconst fileName = $('Split In Batches').item.json.name;\nconst mimeType = $('Split In Batches').item.json.mimeType;\nconst modifiedTime = $('Split In Batches').item.json.modifiedTime;\nconst fileSize = $('Split In Batches').item.json.size;\n\nconst rawText = $json.text || $json.extractedText || $json.content || '';\nconst parsedText = rawText\n  .replace(/\\s+/g, ' ')\n  .replace(/\\u0000/g, '')\n  .trim()\n  .slice(0, 20000);\n\nreturn {\n  json: {\n    drive_file_id: fileId,\n    filename: fileName,\n    parsed_text: parsedText || `[File: ${fileName}] [No extractable text found]`,\n    mime_type: mimeType,\n    modified_time: modifiedTime,\n    file_size: fileSize,\n    has_text: !!parsedText\n  }\n};"
+        "jsCode": "const fileId = $('Split In Batches').item.json.id;\nconst fileName = $('Split In Batches').item.json.name;\nconst mimeType = $('Split In Batches').item.json.mimeType;\nconst modifiedTime = $('Split In Batches').item.json.modifiedTime;\nconst fileSize = $('Split In Batches').item.json.size;\n\nconst rawText = $json.text || $json.extractedText || $json.content || '';\nconst parsedText = rawText\n  .replace(/\\s+/g, ' ')\n  .replace(/\\u0000/g, '')\n  .trim()\n  .slice(0, 20000);\n\nreturn {\n  json: {\n    drive_file_id: fileId,\n    filename: fileName,\n    parsed_text: parsedText,\n    mime_type: mimeType,\n    modified_time: modifiedTime,\n    file_size: fileSize,\n    has_text: !!parsedText\n  }\n};"
       },
       "id": "11806e60-2612-49c5-aa98-52ef6c47dc4f",
       "name": "Code - Parse PDF",
@@ -236,7 +236,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const jd = $('Set JD').first().json.jd;\n\nconst seen = new Set();\nconst candidates = $input.all()\n  .map(item => item.json)\n  .filter(c => {\n    const key = c.drive_file_id || c.filename || c._id;\n    if (!key || seen.has(key)) return false;\n    seen.add(key);\n    return true;\n  })\n  .filter(c => {\n    const text = (c.parsed_text || '').trim();\n    return text &&\n      !text.includes('[No extractable text found]') &&\n      text.length > 80;\n  })\n  .slice(0, 10);\n\nconst formatted = candidates.map((c, i) => {\n  const text = (c.parsed_text || '').substring(0, 1200);\n  return `Candidate ${i + 1}:\ndrive_file_id: ${c.drive_file_id || 'Unknown'}\nFile: ${c.filename || 'Unknown'}\nText: ${text}`;\n}).join('\\n\\n---\\n\\n');\n\nreturn [{\n  json: {\n    jd,\n    candidates_text: formatted,\n    candidate_list: candidates\n  }\n}];"
+        "jsCode": "const jd = $('Set JD').first().json.jd;\n\nconst seen = new Set();\nconst items = $input.all().map(item => item.json);\n\nconst candidates = items\n  .filter(c => {\n    const key = c.drive_file_id || c.filename || c._id;\n    if (!key || seen.has(key)) return false;\n    seen.add(key);\n    return true;\n  })\n  .slice(0, 10);\n\nconst formatted = candidates.map((c, i) => {\n  const text = (c.parsed_text || '').trim();\n  return `Candidate ${i + 1}:\ndrive_file_id: ${c.drive_file_id || 'Unknown'}\nFile: ${c.filename || 'Unknown'}\nText: ${text || '[No text]'}`;\n}).join('\\n\\n---\\n\\n');\n\nreturn [{\n  json: {\n    jd,\n    candidates_text: formatted,\n    candidate_list: candidates,\n    candidate_count: candidates.length\n  }\n}];"
       },
       "id": "9a5c2dda-5ce4-439f-bfe3-eca03f4b5f50",
       "name": "Code - Format Candidates",
@@ -293,6 +293,7 @@
         4432,
         1904
       ],
+      "alwaysOutputData": true,
       "credentials": {
         "mongoDb": {
           "id": "9gFg2W5MNrEUlEOS",
@@ -328,7 +329,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const jd = $('Set JD').first().json.jd;\nconst queryVector = $('Merge JD + Embedding').first().json.data[0].embedding;\n\nreturn [{\n  json: {\n    jd,\n    mongoQuery: [\n      {\n        $vectorSearch: {\n          index: \"resume_vector_index\",\n          path: \"embedding\",\n          queryVector,\n          numCandidates: 100,\n          limit: 10\n        }\n      }\n    ]\n  }\n}];"
+        "jsCode": "const jd = $('Set JD').first().json.jd;\nconst queryVector = $('Merge JD + Embedding').first().json.data[0].embedding;\n\nreturn [{\n  json: {\n    jd,\n    mongoQuery: [\n      {\n        $vectorSearch: {\n          index: \"resume_vector_index\",\n          path: \"embedding\",\n          queryVector,\n          numCandidates: 100,\n          limit: 10\n        }\n      },\n      {\n        $project: {\n          _id: 1,\n          drive_file_id: 1,\n          filename: 1,\n          parsed_text: 1,\n          mime_type: 1,\n          file_size: 1,\n          modified_time: 1,\n          score: { $meta: \"vectorSearchScore\" }\n        }\n      }\n    ]\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -849,7 +850,7 @@
     "timeSavedMode": "fixed",
     "callerPolicy": "workflowsFromSameOwner"
   },
-  "versionId": "f4cf2f5a-f4a6-4d05-8e6e-46df66d809d6",
+  "versionId": "a7c38d59-30d2-4c60-9a00-afcb79977688",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e717a1421f4b6dce43d7723999bb435481f07c8d6b6cf56d78e1a88170d9a147"
